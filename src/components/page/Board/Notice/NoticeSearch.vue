@@ -15,21 +15,19 @@ const keyword = ref("keyword");
 const searchStartDate = ref("");
 const searchEndDate = ref("");
 
-const HandlerSearch = () => {    
+const HandlerSearch = () => {
     const query = [];
     !keyword.value || query.push(`searchTitle${keyword.value}`);
-    !searchStartDate.value || query.push(`searchStartDate${searchStartDate.value}`);
-    !searchEndDate.value || query.push(`searchEndDate${searchEndDate.value}`);    
-    const queryString = query.length > 0 ? `?${query.join(" & ")}` : "";
+    !searchStDate.value || query.push(`searchStDate${searchStartDate.value}`);
+    !searchEdDate.value || query.push(`searchEdDate${searchEndDate.value}`);
+    const queryString = query.length > 0 ? `?${query.join("&")}` : "";
 
     router.push(queryString);
 };
 
 // 인자로 받는 함수안에 반응형 객체 (ref같은거)가 있으며ㅑㄴ, 객체가 변경될 때 마다, 해당 변수를 실행 시켜줌
 // 근데, 밑에 watchEffect는 ref같은거 없어요. 그래서 그냥 새로고침 누르면 최초에 한 번 실행되는 거입니다.
-watchEffect(() => window.location.search && router.push(window.location.pathname, {replace : true}));
-
-
+watchEffect(() => window.location.search && router.push(window.location.pathname, { replace: true }));
 </script>
 
 <style lang="scss" scoped>
