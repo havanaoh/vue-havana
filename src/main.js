@@ -12,4 +12,5 @@ const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 app.use(VueQueryPlugin).use(pinia).use(router).use(VueAwesomePaginate);
 
+
 app.mount('#app');
