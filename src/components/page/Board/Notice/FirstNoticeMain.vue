@@ -1,9 +1,9 @@
 <template>
     <div class="divNoticeList">
         현재 페이지: {{ cPage }}, 총 개수: {{ noticeList?.noticeCnt }}
-        <!-- <NoticeModal v-if="modalState.modalState" @postSuccess="searchList" 
+        <NoticeModal v-if="modalState.modalState" @postSuccess="searchList" 
         @modalClose="() => (noticeIdx=0)"
-        :idx="noticeIdx"/>          -->
+        :idx="noticeIdx"/>         
         <!-- <NoticeModal v-show="modalValue"/> -->
         <table>
             <colgroup>
@@ -22,13 +22,10 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-if="isLoading">...로딩중</template>
-                    <template v-if="isSuccess">
-                    <template v-if="noticeList.noticeCnt > 0">
-                        <tr 
-                            v-for="notice in noticeList.notice" 
-                            :key="notice.noticeIdx" 
-                            @click="handlerDetail(notice.noticeIdx)">
+                <template v-if="noticeList">
+                    <template v-if="noticeList.noticeCnt">
+                        <tr v-for="notice in noticeList.notice" :key="notice.noticeIdx" 
+                            @click="handlerModal(notice.noticeIdx)">
                             <td>{{ notice.noticeIdx}} </td>
                             <td>{{ notice.title}}</td>
                             <td>{{ notice.createdDate.substr(0, 10) }}</td>
@@ -40,7 +37,7 @@
                             <td colspan="7">일치하는 검색 결과가 없습니다</td>
                         </tr>
                     </template>
-                    </template>                
+                </template>
             </tbody>
         </table>
         <Pagination 
@@ -54,59 +51,51 @@
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import Pagination from '../../../common/Pagination.vue';
+import { onMounted } from 'vue';
 import axios from "axios";
 import { useModalStore } from '@/stores/modalState';
-import { useQuery } from "@tanstack/vue-query";
-import { useNoticelistSearchQuery } from "../../../../hook/notice/useNoticeListSearchQuery";
 
-// const route = useRoute();
-const router = useRouter();
+const route = useRoute();
 // console.log(route);
 // watch(route, () => console.log(route.query));
-// const noticeList = ref();
+const noticeList = ref();
 // const noticeCount = ref(0);
 const cPage = ref(1);
-// const modalState = useModalStore();
-// const noticeIdx = ref(0);
+const modalState = useModalStore();
+const noticeIdx = ref(0);
 
-const injectedValue = inject('provideValue');
+const searchList = () => {
+    const param = new URLSearchParams({
+        searchTitle: route.query.searchTitle || '',
+        searchStDate: route.query.searchStDate || '',
+        searchEdDate: route.query.searchEdDate || '',
+        currentPage: cPage.value,
+        pageSize:5
+    });        
+    axios.post('/api/board/noticeListJson.do', param).then((res)=>{
+        noticeList.value = res.data;
+    })
+};
 
-// watch(injectedValue, () => {
-//     console.log(injectedValue.value);
+const handlerModal = (idx) => {
+    console.log(idx);
+    modalState.setModalState();
+    noticeIdx.value = idx;
+};
+
+
+watch(route, searchList);
+
+onMounted(() => {
+    searchList();
+});
+
+// onBeforeMounted(()=>{
+//     searchList();
 // })
 
-// const searchList = async () => {
-//     const param = new URLSearchParams({
-//         ...injectedValue.value,
-//         currentPage: cPage.value,
-//         pageSize:5
-//     });        
-//     const result = await axios.post('/api/board/noticeListJson.do', param);
-
-//     return result.data;
-// };
-
-//호출되면 바로 사용해서 onMounted가 필요없음
-const  { data: noticeList, 
-         isLoading, refetch, isSuccess } 
-    = useNoticelistSearchQuery(
-    injectedValue, cPage    
-    // staleTime: 1000 * 60,
-    // refetchInterval: 1000
-);
-
-// queryKey: ['noticeList'],
-// watch( [ injectedValue, cPage ], refetch );
-
-
-const handlerDetail = (param) => {
-  router.push({
-    name: 'noticeDetail',
-    params: { idx: param },
-  });
-};
 
 </script>
 
